@@ -1,5 +1,16 @@
 import pandas as pd
 import os
+import re
+import string
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+
+nltk.download('punkt')        # For tokenization
+nltk.download('wordnet')      # For lemmatization
+nltk.download('stopwords')    # For removing common words
+nltk.download('omw-1.4')      # Required by WordNetLemmatizer
 
 def load_dataset(file_path):
     """
@@ -72,12 +83,12 @@ if __name__ == "__main__":
     missing_values = df.isnull().sum()
     print(missing_values[missing_values > 0]) # Only show columns with missing values
 
-    # Strategy for missing values (example for 'sms_spam_collection.csv'):
-    # The 'sms_spam_collection.csv' often has several unnamed columns that are entirely empty.
+    # Strategy for missing values (example for 'emails.csv'):
+    # The 'emails.csv' often has several unnamed columns that are entirely empty.
     # We will decide to drop them.
     # Identify columns that are mostly or entirely null (often unnamed columns in this dataset)
     print("\n2.2. Deciding on Missing Value Strategy:")
-    # For 'sms_spam_collection.csv', columns like 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4' are often empty.
+    # For 'emails.csv', columns like 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4' are often empty.
     # Let's drop columns that have a high percentage of missing values (e.g., > 90%)
     threshold = len(df) * 0.90 # 90% missing values
     cols_to_drop_missing = missing_values[missing_values > threshold].index.tolist()
@@ -93,7 +104,7 @@ if __name__ == "__main__":
 
     # 3. Understand Target Distribution
     print("\n--- 3. Understanding Target Distribution ---")
-    # For 'sms_spam_collection.csv', the target column is usually 'v1'
+    # For 'emails.csv', the target column is usually 'v1'
     target_column = 'v1' # Assuming 'v1' is the original target column name
 
     if target_column in df.columns:
@@ -123,7 +134,7 @@ if __name__ == "__main__":
 
     # 4. Rename Columns (if necessary)
     print("\n--- 4. Renaming Columns ---")
-    # For 'sms_spam_collection.csv', 'v1' is typically the label and 'v2' is the message.
+    # For 'emails.csv', 'v1' is typically the label and 'v2' is the message.
     # Check if 'v1' and 'v2' exist before renaming
     columns_to_rename = {}
     if 'v1' in df.columns:
@@ -144,7 +155,7 @@ if __name__ == "__main__":
     # This step is often implicitly handled by the "check for missing values" step
     # if the unnecessary columns are empty.
     # However, some datasets might have ID columns or other irrelevant features that are not empty.
-    # For 'sms_spam_collection.csv', after dropping empty 'Unnamed' columns and renaming,
+    # For 'emails.csv', after dropping empty 'Unnamed' columns and renaming,
     # there usually aren't other obviously unnecessary columns.
 
     # Example of dropping if you specifically knew a column name (e.g., 'id_column')
@@ -190,3 +201,195 @@ if __name__ == "__main__":
     #     print(e)
     # except FileNotFoundError:
     #     print(f"Error: Make sure '{unsupported_file_path}' exists or specify the correct path.")
+
+    # Continuing from data_loader.py or in a new eda.py script
+
+import pandas as pd
+import os
+
+# Assuming you have the load_dataset function defined as before:
+def load_dataset(file_path):
+    """
+    Loads a dataset into a Pandas DataFrame, handling CSV and TSV formats.
+    """
+    if not os.path.exists(file_path):
+        raise ValueError(f"Error: File not found at '{file_path}'")
+
+    file_extension = os.path.splitext(file_path)[1].lower()
+
+    if file_extension == '.csv':
+        try:
+            df = pd.read_csv(file_path, encoding='latin-1')
+        except UnicodeDecodeError:
+            print("Warning: 'latin-1' encoding failed, trying 'utf-8'.")
+            df = pd.read_csv(file_path, encoding='utf-8')
+        print(f"Successfully loaded CSV: {file_path}")
+    elif file_extension == '.tsv':
+        try:
+            df = pd.read_csv(file_path, sep='\t', encoding='latin-1')
+        except UnicodeDecodeError:
+            print("Warning: 'latin-1' encoding failed, trying 'utf-8'.")
+            df = pd.read_csv(file_path, sep='\t', encoding='utf-8')
+        print(f"Successfully loaded TSV: {file_path}")
+    else:
+        raise ValueError(f"Unsupported file format: {file_extension}. Only .csv and .tsv are supported.")
+
+    return df
+
+if __name__ == "__main__":
+    # --- Data Loading (as before) ---
+    csv_file_path = 'data/emails.csv' # Adjust this path
+    try:
+        df = load_dataset(csv_file_path)
+        print("\nInitial DataFrame loaded successfully for EDA.")
+    except Exception as e:
+        print(f"Could not load data for EDA: {e}")
+        # Exit or handle the error if data loading fails
+        exit() # Exiting if data isn't loaded for subsequent steps
+
+    print("\n" + "="*50)
+    print("Beginning Initial Data Exploration (EDA)")
+    print("="*50)
+
+    # 1. Inspect Data
+    print("\n--- 1. Inspecting Data ---")
+    print("\n1.1. df.head(): First 5 rows of the DataFrame")
+    print(df.head())
+
+    print("\n1.2. df.info(): Summary of DataFrame, including data types and non-null values")
+    df.info()
+
+    print("\n1.3. df.describe(): Descriptive statistics for numerical columns")
+    print(df.describe())
+
+    # 2. Check for Missing Values
+    print("\n--- 2. Checking for Missing Values ---")
+    print("\n2.1. df.isnull().sum(): Count of missing values per column")
+    missing_values = df.isnull().sum()
+    print(missing_values[missing_values > 0]) # Only show columns with missing values
+
+    # Strategy for missing values (example for 'emails.csv'):
+    # The 'emails.csv' often has several unnamed columns that are entirely empty.
+    # We will decide to drop them.
+    # Identify columns that are mostly or entirely null (often unnamed columns in this dataset)
+    print("\n2.2. Deciding on Missing Value Strategy:")
+    # For 'emails.csv', columns like 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4' are often empty.
+    # Let's drop columns that have a high percentage of missing values (e.g., > 90%)
+    threshold = len(df) * 0.90 # 90% missing values
+    cols_to_drop_missing = missing_values[missing_values > threshold].index.tolist()
+
+    if cols_to_drop_missing:
+        print(f"Dropping columns with > 90% missing values: {cols_to_drop_missing}")
+        df.drop(columns=cols_to_drop_missing, inplace=True)
+        print("Columns dropped. Re-checking missing values:")
+        print(df.isnull().sum())
+    else:
+        print("No columns with > 90% missing values found to drop. Proceeding.")
+
+
+    # 3. Understand Target Distribution
+    print("\n--- 3. Understanding Target Distribution ---")
+    # For 'emails.csv', the target column is usually 'v1'
+    target_column = 'v1' # Assuming 'v1' is the original target column name
+
+    if target_column in df.columns:
+        print(f"\n3.1. df['{target_column}'].value_counts(): Distribution of the target variable")
+        target_distribution = df[target_column].value_counts()
+        print(target_distribution)
+
+        print("\n3.2. Checking for Imbalance:")
+        if len(target_distribution) > 1:
+            # Calculate percentage for better understanding
+            total_samples = target_distribution.sum()
+            for value, count in target_distribution.items():
+                percentage = (count / total_samples) * 100
+                print(f"'{value}': {count} samples ({percentage:.2f}%)")
+
+            # Simple check for imbalance (e.g., if one class is less than 20% of the other)
+            if target_distribution.min() / target_distribution.max() < 0.2:
+                print("Warning: The target variable shows significant class imbalance.")
+                print("This might require handling (e.g., oversampling, undersampling, or using specific evaluation metrics) in later steps.")
+            else:
+                print("The target variable appears relatively balanced or imbalance is not severe.")
+        else:
+            print(f"Only one unique value found in '{target_column}'. Cannot assess distribution.")
+    else:
+        print(f"Target column '{target_column}' not found. Please check column names after loading.")
+
+
+    # 4. Rename Columns (if necessary)
+    print("\n--- 4. Renaming Columns ---")
+    # For 'emails.csv', 'v1' is typically the label and 'v2' is the message.
+    # Check if 'v1' and 'v2' exist before renaming
+    columns_to_rename = {}
+    if 'v1' in df.columns:
+        columns_to_rename['v1'] = 'label'
+    if 'v2' in df.columns:
+        columns_to_rename['v2'] = 'message'
+
+    if columns_to_rename:
+        print(f"Renaming columns: {columns_to_rename}")
+        df.rename(columns=columns_to_rename, inplace=True)
+        print("Columns renamed. New column names:")
+        print(df.columns.tolist())
+    else:
+        print("No 'v1' or 'v2' columns found for default renaming.")
+
+    # 5. Drop Unnecessary Columns (after renaming, if applicable)
+    print("\n--- 5. Dropping Unnecessary Columns ---")
+    # This step is often implicitly handled by the "check for missing values" step
+    # if the unnecessary columns are empty.
+    # However, some datasets might have ID columns or other irrelevant features that are not empty.
+    # For 'emails.csv', after dropping empty 'Unnamed' columns and renaming,
+    # there usually aren't other obviously unnecessary columns.
+
+    # Example of dropping if you specifically knew a column name (e.g., 'id_column')
+    # if 'id_column' in df.columns:
+    #     print("Dropping 'id_column'.")
+    #     df.drop(columns=['id_column'], inplace=True)
+    # else:
+    #     print("No specific 'id_column' found to drop.")
+
+    print("Reviewing final DataFrame head after EDA steps:")
+    print(df.head())
+    print(f"Final DataFrame shape: {df.shape}")
+
+    print("\n" + "="*50)
+    print("Initial Data Exploration (EDA) Complete.")
+    print("="*50)
+
+    # You can now save the cleaned DataFrame if you want, or pass it to the next stage
+    # df.to_csv('data/sms_spam_collection_cleaned.csv', index=False)
+
+
+# --- Your preprocess_text function (from before) ---
+def preprocess_text(text, use_stemming=False, use_lemmatization=True):
+    """
+    Cleans and preprocesses a raw text string for natural language processing.
+    """
+    if use_stemming and use_lemmatization:
+        raise ValueError("Cannot use both stemming and lemmatization simultaneously. Choose one.")
+
+    text = text.lower()
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    text = re.sub(r'\s+', ' ', text).strip()
+    text = re.sub(r'\d+', '', text) # Removing numbers for now
+
+    tokens = word_tokenize(text)
+    stop_words = set(stopwords.words('english'))
+    filtered_tokens = [word for word in tokens if word not in stop_words]
+
+    processed_tokens = []
+    if use_stemming:
+        stemmer = PorterStemmer()
+        for word in filtered_tokens:
+            processed_tokens.append(stemmer.stem(word))
+    elif use_lemmatization:
+        lemmatizer = WordNetLemmatizer()
+        for word in filtered_tokens:
+            processed_tokens.append(lemmatizer.lemmatize(word))
+    else:
+        processed_tokens = filtered_tokens
+
+    cleaned_text = ' '.join(processed_tokens)
+    return cleaned_text
