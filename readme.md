@@ -27,7 +27,9 @@ The following Python libraries are essential for this project:
 
 ## Dataset
 
-This project utilizes publicly available spam datasets. Good sources include platforms like **Kaggle**, which host numerous datasets specifically designed for spam detection challenges. You'll need to acquire and preprocess a suitable dataset before training your model.
+This project utilizes publicly available spam datasets. Good sources include platforms like [**Kaggle**](https://www.kaggle.com/datasets/balaka18/email-spam-classification-dataset-csv), which host numerous datasets specifically designed for spam detection challenges. You'll need to acquire and preprocess a suitable dataset before training your model.
+
+
 
 ---
 
