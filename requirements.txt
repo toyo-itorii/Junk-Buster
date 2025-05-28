@@ -1,6 +1,5 @@
-scikit-learn
+# requirements.txt
+pandas
 nltk
-pandas # For data handling
-numpy # Often used with pandas
-matplotlib # For basic visualization (optional but good)
-seaborn # For enhanced visualization (optional but good)    
+scikit-learn
+joblib
