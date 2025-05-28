@@ -1,6 +1,6 @@
 ---
 
-# Spam Email Classifier
+# Junk Buster
 
 This project's goal is to build a robust machine learning model capable of classifying emails as either "spam" or "not spam" (ham). This is a fundamental task in natural language processing (NLP) and a great way to solidify your understanding of text-based classification.
 
