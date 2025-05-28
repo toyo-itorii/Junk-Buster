@@ -1,0 +1,4 @@
+Goal: Build a model that can classify emails as "spam" or "not spam."
+Skills Reinforced: Text preprocessing (tokenization, stemming/lemmatization), feature engineering (TF-IDF), classification algorithms (e.g., Naive Bayes, Logistic Regression).
+Python Libraries: scikit-learn, nltk (for NLP).
+Dataset: Publicly available spam datasets (e.g., from Kaggle).
