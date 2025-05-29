@@ -1,4 +1,4 @@
-# Junk Buster - Spam Email Classifier
+# Junk Buster AI - Spam Email Checker
 
 ![Spam Email Classifier Interface](spam-classifier-interface.jpeg)
 
