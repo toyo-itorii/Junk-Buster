@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+    <title>Junk Buster AI</title>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>👻 Junk Buster AI</h1>
+            <p>AI/ML-powered email spam detection using Naive Bayes & Logistic Regression</p>
+        </header>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>📧 Email Analysis</h2>
+                
+                <div class="textarea-container">
+                    <textarea 
+                        id="emailInput" 
+                        placeholder="Paste your email content here for spam analysis...
+
+Example email content:
+- Subject lines
+- Email body text
+- Any suspicious content
+
+The classifier will analyze word patterns and provide predictions from two different ML models."
+                    ></textarea>
+                </div>
+
+                <div class="sample-buttons">
+                    <button class="sample-btn spam" onclick="loadSampleEmail('spam1')">💸 Sample Spam 1</button>
+                    <button class="sample-btn spam" onclick="loadSampleEmail('spam2')">🎁 Sample Spam 2</button>
+                    <button class="sample-btn legitimate" onclick="loadSampleEmail('legit1')">✉️ Sample Legitimate 1</button>
+                    <button class="sample-btn legitimate" onclick="loadSampleEmail('legit2')">💼 Sample Legitimate 2</button>
+                </div>
+
+                <button class="analyze-btn" onclick="analyzeEmail()" id="analyzeBtn">
+                    🔍 Analyze Email
+                </button>
+            </div>
+
+            <div class="results-section">
+                <h2>📊 Prediction Results</h2>
+                
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>Analyzing email content...</p>
+                </div>
+
+                <div id="resultsContainer" class="hidden">
+                    <div class="prediction-card">
+                        <div class="model-name">🤖 Multinomial Naive Bayes</div>
+                        <div class="prediction-result">
+                            <span class="prediction-label" id="nbPrediction">-</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="nbConfidenceBar"></div>
+                        </div>
+                        <div class="confidence-text" id="nbConfidenceText">Confidence: -</div>
+                    </div>
+
+                    <div class="prediction-card">
+                        <div class="model-name">📈 Logistic Regression</div>
+                        <div class="prediction-result">
+                            <span class="prediction-label" id="lrPrediction">-</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="lrConfidenceBar"></div>
+                        </div>
+                        <div class="confidence-text" id="lrConfidenceText">Confidence: -</div>
+                    </div>
+
+                    <div class="agreement-status" id="agreementStatus">
+                        <strong>Model Agreement:</strong> <span id="agreementText">-</span>
+                    </div>
+
+                    <div class="word-analysis">
+                        <h3>🔍 Word Analysis</h3>
+                        <div class="word-cloud" id="wordCloud"></div>
+                    </div>
+                </div>
+
+                <div class="stats-panel">
+                    <div class="stat-card">
+                        <div class="stat-value" id="wordCount">-</div>
+                        <div class="stat-label">Words</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="uniqueWords">-</div>
+                        <div class="stat-label">Unique</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="spamWords">-</div>
+                        <div class="stat-label">Spam Indicators</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
