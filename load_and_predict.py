@@ -200,3 +200,5 @@ if feature_names:
               f"(confidence: {normal_result['logistic_regression']['spam_probability']:.3f})")
         print(f"Naive Bayes: {'SPAM' if normal_result['naive_bayes']['prediction'] == 1 else 'NOT SPAM'} "
               f"(confidence: {normal_result['naive_bayes']['spam_probability']:.3f})")
+        
+    input("\nPress Enter to exit the script.")

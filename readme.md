@@ -36,7 +36,7 @@ To get this project up and running on your local machine, follow these steps:
 
 1.  **Clone the repository (if applicable):**
     ```bash
-    git clone <your-repository-url>
+    git clone https://github.com/toyo-itorii/Junk-Buster
     cd spam_classifier_project
     ```
     (If you don't have a repository, simply navigate to your project directory.)
@@ -116,4 +116,5 @@ The trained `Multinomial Naive Bayes` and `Logistic Regression` models are saved
 * **Deployment:** Create a simple API (e.g., with Flask or FastAPI) to expose the trained model for real-time spam prediction.
 * **Logging:** Add comprehensive logging for better tracking of the pipeline's execution.
 * **Data Versioning:** Use tools like DVC for managing dataset versions.
+* **Web UI:** Create a responsive web interface, allowing user to input email text and receive instant predictions with confidence scores.
 ---
