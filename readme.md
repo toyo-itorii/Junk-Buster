@@ -1,7 +1,4 @@
 # Junk Buster AI - Spam Email Checker
-
-![Spam Email Classifier Interface](spam-classifier-interface.jpeg)
-
 Advanced ML-powered email spam detection using Naive Bayes & Logistic Regression
 
 ## Features
