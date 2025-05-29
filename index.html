@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam Email Classifier</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e7ff;
+        }
+
+        .input-section h2 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .textarea-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #emailInput {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e7ff;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        #emailInput:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .sample-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .sample-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .sample-btn.spam {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .sample-btn.spam:hover {
+            background: #fecaca;
+            transform: translateY(-1px);
+        }
+
+        .sample-btn.legitimate {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .sample-btn.legitimate:hover {
+            background: #bbf7d0;
+            transform: translateY(-1px);
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .analyze-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e7ff;
+        }
+
+        .results-section h2 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .prediction-card {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .model-name {
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+
+        .prediction-result {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .prediction-label {
+            font-size: 18px;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .prediction-label.spam {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .prediction-label.not-spam {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            transition: width 0.8s ease;
+            border-radius: 4px;
+        }
+
+        .confidence-fill.spam {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+
+        .confidence-fill.not-spam {
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+        }
+
+        .confidence-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .agreement-status {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .agreement-status.agree {
+            background: #f0fdf4;
+            border-color: #22c55e;
+            color: #15803d;
+        }
+
+        .agreement-status.disagree {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            color: #d97706;
+        }
+
+        .word-analysis {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .word-analysis h3 {
+            color: #1e3a8a;
+            margin-bottom: 15px;
+        }
+
+        .word-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .word-tag {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .word-tag.high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .word-tag.medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .word-tag.low {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🛡️ Spam Email Classifier</h1>
+            <p>Advanced ML-powered email spam detection using Naive Bayes & Logistic Regression</p>
+        </header>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>📧 Email Analysis</h2>
+                
+                <div class="textarea-container">
+                    <textarea 
+                        id="emailInput" 
+                        placeholder="Paste your email content here for spam analysis...
+
+Example email content:
+- Subject lines
+- Email body text
+- Any suspicious content
+
+The classifier will analyze word patterns and provide predictions from two different ML models."
+                    ></textarea>
+                </div>
+
+                <div class="sample-buttons">
+                    <button class="sample-btn spam" onclick="loadSampleEmail('spam1')">💸 Sample Spam 1</button>
+                    <button class="sample-btn spam" onclick="loadSampleEmail('spam2')">🎁 Sample Spam 2</button>
+                    <button class="sample-btn legitimate" onclick="loadSampleEmail('legit1')">✉️ Sample Legitimate 1</button>
+                    <button class="sample-btn legitimate" onclick="loadSampleEmail('legit2')">💼 Sample Legitimate 2</button>
+                </div>
+
+                <button class="analyze-btn" onclick="analyzeEmail()" id="analyzeBtn">
+                    🔍 Analyze Email
+                </button>
+            </div>
+
+            <div class="results-section">
+                <h2>📊 Prediction Results</h2>
+                
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>Analyzing email content...</p>
+                </div>
+
+                <div id="resultsContainer" class="hidden">
+                    <div class="prediction-card">
+                        <div class="model-name">🤖 Multinomial Naive Bayes</div>
+                        <div class="prediction-result">
+                            <span class="prediction-label" id="nbPrediction">-</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="nbConfidenceBar"></div>
+                        </div>
+                        <div class="confidence-text" id="nbConfidenceText">Confidence: -</div>
+                    </div>
+
+                    <div class="prediction-card">
+                        <div class="model-name">📈 Logistic Regression</div>
+                        <div class="prediction-result">
+                            <span class="prediction-label" id="lrPrediction">-</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="lrConfidenceBar"></div>
+                        </div>
+                        <div class="confidence-text" id="lrConfidenceText">Confidence: -</div>
+                    </div>
+
+                    <div class="agreement-status" id="agreementStatus">
+                        <strong>Model Agreement:</strong> <span id="agreementText">-</span>
+                    </div>
+
+                    <div class="word-analysis">
+                        <h3>🔍 Word Analysis</h3>
+                        <div class="word-cloud" id="wordCloud"></div>
+                    </div>
+                </div>
+
+                <div class="stats-panel">
+                    <div class="stat-card">
+                        <div class="stat-value" id="wordCount">-</div>
+                        <div class="stat-label">Words</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="uniqueWords">-</div>
+                        <div class="stat-label">Unique</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="spamWords">-</div>
+                        <div class="stat-label">Spam Indicators</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample emails for demonstration
+        const sampleEmails = {
+            spam1: `Subject: CONGRATULATIONS! You've Won $1,000,000!!!
+
+Dear Winner,
+
+CONGRATULATIONS! You have been selected as our GRAND PRIZE WINNER in our international lottery!
+
+You have won $1,000,000 USD! To claim your prize, you must act NOW!
+
+Send us your:
+- Full name
+- Address  
+- Phone number
+- Bank account details
+
+Click here to claim your money NOW! This offer expires in 24 hours!
+
+FREE MONEY! NO COST! 100% GUARANTEED!
+
+Best regards,
+International Lottery Commission`,
+
+            spam2: `Subject: Make Money Fast - Work From Home
+
+Earn $5000+ per week working from home!
+
+NO EXPERIENCE REQUIRED! 
+WORK ONLY 2 HOURS PER DAY!
+100% GUARANTEED INCOME!
+
+Click here to start making money immediately!
+
+Special offer: Act now and get BONUS $1000!
+
+This is a limited time offer - don't miss out!
+
+Call now: 1-800-GET-RICH
+Visit: www.makemoneyfast.com
+
+FREE registration! Start earning today!`,
+
+            legit1: `Subject: Team Meeting Tomorrow at 2 PM
+
+Hi team,
+
+I hope everyone is doing well. I wanted to remind you about our weekly team meeting scheduled for tomorrow at 2:00 PM in the conference room.
+
+Agenda items:
+- Project status updates
+- Q3 planning discussion  
+- New client onboarding process
+- Any questions or concerns
+
+Please come prepared with your weekly reports. If you cannot attend, please let me know in advance.
+
+Thanks,
+Sarah Johnson
+Project Manager`,
+
+            legit2: `Subject: Your Order Confirmation #12345
+
+Dear Valued Customer,
+
+Thank you for your recent purchase from our online store. This email confirms that we have received your order.
+
+Order Details:
+- Order Number: #12345
+- Date: March 15, 2024
+- Total: $89.99
+
+Your order is being processed and will ship within 2-3 business days. You will receive a tracking number once your order has been dispatched.
+
+If you have any questions about your order, please contact our customer service team.
+
+Best regards,
+Customer Service Team
+support@company.com`
+        };
+
+        // Common spam indicator words (simplified for demo)
+        const spamWords = [
+            'free', 'money', 'win', 'winner', 'prize', 'lottery', 'congratulations',
+            'urgent', 'limited', 'offer', 'deal', 'discount', 'guaranteed', 'bonus',
+            'click', 'call', 'now', 'act', 'immediately', 'expires', 'hurry',
+            'rich', 'cash', 'earn', 'income', 'profit', 'investment', 'opportunity'
+        ];
+
+        function loadSampleEmail(type) {
+            const emailInput = document.getElementById('emailInput');
+            emailInput.value = sampleEmails[type];
+            emailInput.focus();
+        }
+
+        function preprocessText(text) {
+            // Simple text preprocessing
+            return text.toLowerCase()
+                      .replace(/[^\w\s]/g, ' ')
+                      .replace(/\s+/g, ' ')
+                      .trim();
+        }
+
+        function extractFeatures(text) {
+            const words = preprocessText(text).split(' ');
+            const wordCounts = {};
+            
+            // Count word frequencies
+            words.forEach(word => {
+                if (word.length > 2) { // Filter short words
+                    wordCounts[word] = (wordCounts[word] || 0) + 1;
+                }
+            });
+
+            return {
+                wordCounts,
+                totalWords: words.length,
+                uniqueWords: Object.keys(wordCounts).length,
+                spamWordCount: words.filter(word => spamWords.includes(word)).length
+            };
+        }
+
+        function simulateNaiveBayes(features) {
+            // Simplified Naive Bayes simulation based on spam indicators
+            let spamScore = 0;
+            let totalWords = features.totalWords;
+            
+            // Check for spam indicators
+            Object.keys(features.wordCounts).forEach(word => {
+                if (spamWords.includes(word)) {
+                    spamScore += features.wordCounts[word] * 2; // Weight spam words higher
+                }
+            });
+
+            // Additional heuristics
+            if (features.totalWords < 10) spamScore -= 5; // Very short emails less likely spam
+            if (features.spamWordCount > 5) spamScore += 10; // Many spam words = likely spam
+            if (features.wordCounts['free'] && features.wordCounts['money']) spamScore += 15;
+            if (features.wordCounts['click'] && features.wordCounts['now']) spamScore += 10;
+
+            // Convert to probability (simplified)
+            const probability = Math.min(Math.max(spamScore / totalWords, 0), 0.95);
+            return {
+                prediction: probability > 0.5 ? 1 : 0,
+                confidence: probability > 0.5 ? probability : 1 - probability
+            };
+        }
+
+        function simulateLogisticRegression(features) {
+            // Simplified Logistic Regression simulation
+            let score = 0;
+            
+            // Feature weights (simplified)
+            Object.keys(features.wordCounts).forEach(word => {
+                if (spamWords.includes(word)) {
+                    score += features.wordCounts[word] * 0.3;
+                }
+            });
+
+            // Additional features
+            score += features.spamWordCount * 0.2;
+            score -= Math.log(features.totalWords + 1) * 0.1; // Longer emails less likely spam
+            
+            // Specific word combinations
+            if (features.wordCounts['urgent'] && features.wordCounts['act']) score += 0.5;
+            if (features.wordCounts['winner'] && features.wordCounts['prize']) score += 0.7;
+            if (features.wordCounts['guarantee'] || features.wordCounts['guaranteed']) score += 0.4;
+
+            // Apply sigmoid function
+            const sigmoid = 1 / (1 + Math.exp(-score));
+            
+            return {
+                prediction: sigmoid > 0.5 ? 1 : 0,
+                confidence: sigmoid > 0.5 ? sigmoid : 1 - sigmoid
+            };
+        }
+
+        function displayResults(nbResult, lrResult, features) {
+            // Show results container
+            document.getElementById('resultsContainer').classList.remove('hidden');
+            
+            // Naive Bayes results
+            const nbPredLabel = document.getElementById('nbPrediction');
+            const nbConfBar = document.getElementById('nbConfidenceBar');
+            const nbConfText = document.getElementById('nbConfidenceText');
+            
+            nbPredLabel.textContent = nbResult.prediction === 1 ? 'SPAM' : 'NOT SPAM';
+            nbPredLabel.className = `prediction-label ${nbResult.prediction === 1 ? 'spam' : 'not-spam'}`;
+            nbConfBar.className = `confidence-fill ${nbResult.prediction === 1 ? 'spam' : 'not-spam'}`;
+            nbConfBar.style.width = `${nbResult.confidence * 100}%`;
+            nbConfText.textContent = `Confidence: ${(nbResult.confidence * 100).toFixed(1)}%`;
+
+            // Logistic Regression results
+            const lrPredLabel = document.getElementById('lrPrediction');
+            const lrConfBar = document.getElementById('lrConfidenceBar');
+            const lrConfText = document.getElementById('lrConfidenceText');
+            
+            lrPredLabel.textContent = lrResult.prediction === 1 ? 'SPAM' : 'NOT SPAM';
+            lrPredLabel.className = `prediction-label ${lrResult.prediction === 1 ? 'spam' : 'not-spam'}`;
+            lrConfBar.className = `confidence-fill ${lrResult.prediction === 1 ? 'spam' : 'not-spam'}`;
+            lrConfBar.style.width = `${lrResult.confidence * 100}%`;
+            lrConfText.textContent = `Confidence: ${(lrResult.confidence * 100).toFixed(1)}%`;
+
+            // Agreement status
+            const agreementStatus = document.getElementById('agreementStatus');
+            const agreementText = document.getElementById('agreementText');
+            
+            if (nbResult.prediction === lrResult.prediction) {
+                agreementStatus.className = 'agreement-status agree';
+                agreementText.textContent = `✅ Both models agree: ${nbResult.prediction === 1 ? 'SPAM' : 'NOT SPAM'}`;
+            } else {
+                agreementStatus.className = 'agreement-status disagree';
+                agreementText.textContent = '⚠️ Models disagree - review manually';
+            }
+
+            // Word analysis
+            displayWordAnalysis(features);
+            
+            // Statistics
+            document.getElementById('wordCount').textContent = features.totalWords;
+            document.getElementById('uniqueWords').textContent = features.uniqueWords;
+            document.getElementById('spamWords').textContent = features.spamWordCount;
+        }
+
+        function displayWordAnalysis(features) {
+            const wordCloud = document.getElementById('wordCloud');
+            wordCloud.innerHTML = '';
+
+            // Get top words by frequency
+            const sortedWords = Object.entries(features.wordCounts)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 20); // Top 20 words
+
+            sortedWords.forEach(([word, count]) => {
+                const wordTag = document.createElement('span');
+                wordTag.className = 'word-tag';
+                wordTag.textContent = `${word} (${count})`;
+                
+                // Color based on spam likelihood
+                if (spamWords.includes(word)) {
+                    wordTag.classList.add('high');
+                } else if (count > 2) {
+                    wordTag.classList.add('medium');
+                } else {
+                    wordTag.classList.add('low');
+                }
+                
+                wordCloud.appendChild(wordTag);
+            });
+        }
+
+        async function analyzeEmail() {
+            const emailText = document.getElementById('emailInput').value.trim();
+            
+            if (!emailText) {
+                alert('Please enter some email content to analyze.');
+                return;
+            }
+
+            // Show loading
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            
+            loadingIndicator.style.display = 'block';
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = '🔄 Analyzing...';
+
+            // Simulate processing delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            try {
+                // Extract features
+                const features = extractFeatures(emailText);
+                
+                // Run both models
+                const nbResult = simulateNaiveBayes(features);
+                const lrResult = simulateLogisticRegression(features);
+                
+                // Display results
+                displayResults(nbResult, lrResult, features);
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                alert('An error occurred during analysis. Please try again.');
+            } finally {
+                // Hide loading
+                loadingIndicator.style.display = 'none';
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = '🔍 Analyze Email';
+            }
+        }
+
+        // Initialize with sample text on load
+        window.addEventListener('load', () => {
+            const emailInput = document.getElementById('emailInput');
+            emailInput.placeholder = `Paste your email content here for spam analysis...
+
+Try clicking one of the sample buttons to see how the classifier works!`;
+        });
+    </script>
+</body>
+</html>

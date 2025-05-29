@@ -108,6 +108,11 @@ Both models are evaluated using **Accuracy**, **Precision**, **Recall**, **F1-Sc
 The trained `Multinomial Naive Bayes` and `Logistic Regression` models are saved using `joblib` in the `trained_models/` directory. This allows for quick loading and reuse of the models for making predictions without needing to retrain them every time the application runs.
 
 ---
+## Web Architecture
+
+The trained `Multinomial Naive Bayes` and `Logistic Regression` models are saved using `joblib` in the `trained_models/` directory. This allows for quick loading and reuse of the models for making predictions without needing to retrain them every time the application runs.
+
+---
 ## Future Enhancements
 
 * **Hyperparameter Tuning:** Implement techniques like GridSearchCV or RandomizedSearchCV to find optimal hyperparameters for the models.
