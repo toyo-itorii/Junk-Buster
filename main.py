@@ -11,8 +11,8 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 # Import reusable functions from utils.py
 from utils import load_dataset, preprocess_text # check_and_download_nltk_data Assuming you add check_and_download_nltk_data to utils.py
 
-def load_and_predict_example(models_dir):
-    """Demonstrates loading models and making a dummy prediction."""
+def load_and_predict_example(models_dir, feature_columns):
+    """Demonstrates loading models and making a dummy prediction with proper feature names."""
     print("="*50)
     print("Loading Models and Making Dummy Prediction")
     print("="*50)
@@ -36,23 +36,43 @@ def load_and_predict_example(models_dir):
         print(f"Error: Multinomial Naive Bayes model file not found at {multinomial_nb_model_path}")
 
     if loaded_logreg_model and loaded_nb_model:
-        # Create a dummy example of new input data (e.g., one row of 3000 features)
-        # This assumes your 'emails.csv' has 3000 feature columns.
-        dummy_new_data = pd.DataFrame([[0] * 3000]) # Example: a single "new email" with 3000 zero counts
+        # Create dummy data with proper feature names (same as training data)
+        dummy_data_dict = {feature: [0] for feature in feature_columns}
+        dummy_new_data = pd.DataFrame(dummy_data_dict)
+        
+        # Add some example word counts for demonstration
+        if 'the' in dummy_new_data.columns:
+            dummy_new_data.loc[0, 'the'] = 2
+        if 'free' in dummy_new_data.columns:
+            dummy_new_data.loc[0, 'free'] = 1
+        if 'money' in dummy_new_data.columns:
+            dummy_new_data.loc[0, 'money'] = 1
 
         try:
             logreg_prediction = loaded_logreg_model.predict(dummy_new_data)
             nb_prediction = loaded_nb_model.predict(dummy_new_data)
+            
+            # Get prediction probabilities
+            logreg_proba = loaded_logreg_model.predict_proba(dummy_new_data)
+            nb_proba = loaded_nb_model.predict_proba(dummy_new_data)
 
             print(f"\nDummy new data shape: {dummy_new_data.shape}")
-            print(f"Logistic Regression prediction: {logreg_prediction[0]} (0: Not Spam, 1: Spam)")
+            print("Non-zero word counts in dummy email:")
+            non_zero_features = dummy_new_data.loc[0, dummy_new_data.loc[0] > 0]
+            print(non_zero_features.to_dict() if len(non_zero_features) > 0 else "All zero")
+            
+            print(f"\nLogistic Regression prediction: {logreg_prediction[0]} (0: Not Spam, 1: Spam)")
+            print(f"Logistic Regression confidence: Not Spam={logreg_proba[0][0]:.3f}, Spam={logreg_proba[0][1]:.3f}")
+            
             print(f"Multinomial Naive Bayes prediction: {nb_prediction[0]} (0: Not Spam, 1: Spam)")
+            print(f"Multinomial Naive Bayes confidence: Not Spam={nb_proba[0][0]:.3f}, Spam={nb_proba[0][1]:.3f}")
 
         except Exception as e:
             print(f"Error during dummy prediction: {e}")
-            print("Please ensure your new data has the same number of features (columns) as the training data (3000 for 'emails.csv').")
+            print("Please ensure your new data has the same number of features (columns) as the training data.")
     else:
         print("\nCould not load one or both models. Skipping prediction example.")
+
 
 def perform_eda(df, target_column_name='Prediction'):
     """Performs initial Exploratory Data Analysis (EDA) on the DataFrame."""
@@ -220,7 +240,7 @@ if __name__ == "__main__":
         save_models(nb_model, logreg_model, models_dir)
 
         # Demonstration of loading models and making new predictions
-        load_and_predict_example(models_dir)
+        load_and_predict_example(models_dir, feature_columns)
 
 
     except Exception as e:
