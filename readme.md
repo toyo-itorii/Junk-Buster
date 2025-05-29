@@ -1,4 +1,57 @@
+# Junk Buster - Spam Email Classifier
+
+![Spam Email Classifier Interface](spam-classifier-interface.jpeg)
+
+Advanced ML-powered email spam detection using Naive Bayes & Logistic Regression
+
+## Features
+
+- **Dual Model Architecture**: Combines Multinomial Naive Bayes and Logistic Regression for enhanced accuracy
+- **Real-time Analysis**: Instant email classification with confidence scores
+- **Word Analysis**: Detailed breakdown of spam indicators and word frequency
+- **Model Agreement Validation**: Shows when both models agree on classification
+- **Interactive Interface**: User-friendly web interface for easy email testing
+
+## Models Trained
+
+The system employs two complementary machine learning models:
+
+1. **Multinomial Naive Bayes**: Probabilistic classifier ideal for text classification
+2. **Logistic Regression**: Linear model providing robust spam detection
+
+Both models work together to provide reliable spam detection with high confidence scores.
+
+## Live Demo
+
+🚀 **Try it now**: [https://toyo-itorii.github.io/Junk-Buster/](https://toyo-itorii.github.io/Junk-Buster/)
+
+You can easily access this project via GitHub Pages using the link above.
+
+## How It Works
+
+1. **Input**: Enter email content in the analysis text area
+2. **Processing**: Both models analyze the text simultaneously
+3. **Classification**: Receive spam/legitimate classification with confidence scores
+4. **Word Analysis**: View detailed breakdown of spam indicators
+5. **Agreement Check**: See when both models agree on the classification
+
+## Sample Results
+
+The interface shows real-time results including:
+- Individual model predictions with confidence percentages
+- Model agreement status
+- Word frequency analysis
+- Spam indicator breakdown
+
+## Getting Started
+
+Visit the [live demo](https://toyo-itorii.github.io/Junk-Buster/) to start classifying emails immediately, or clone this repository to run locally.
+
 ---
+
+*Built with advanced machine learning techniques for reliable spam detection*
+
+<!-- ---
 # Spam Email Classifier
 
 ## Project Overview
@@ -28,6 +81,9 @@ spam_classifier_project/
 └── README.md               # This README file
 └── requirements.txt        # List of project dependencies
 ```
+
+## Models Trained
+You can easily access this project via github page on the right panel.
 
 ---
 ## Setup and Installation
@@ -122,4 +178,4 @@ The trained `Multinomial Naive Bayes` and `Logistic Regression` models are saved
 * **Logging:** Add comprehensive logging for better tracking of the pipeline's execution.
 * **Data Versioning:** Use tools like DVC for managing dataset versions.
 * **Web UI:** Create a responsive web interface, allowing user to input email text and receive instant predictions with confidence scores.
----
+--- -->
