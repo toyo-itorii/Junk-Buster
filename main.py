@@ -11,6 +11,48 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 # Import reusable functions from utils.py
 from utils import load_dataset, preprocess_text # check_and_download_nltk_data Assuming you add check_and_download_nltk_data to utils.py
 
+def load_and_predict_example(models_dir):
+    """Demonstrates loading models and making a dummy prediction."""
+    print("="*50)
+    print("Loading Models and Making Dummy Prediction")
+    print("="*50)
+
+    logistic_regression_model_path = os.path.join(models_dir, 'logistic_regression_model.joblib')
+    multinomial_nb_model_path = os.path.join(models_dir, 'multinomial_nb_model.joblib')
+
+    loaded_logreg_model = None
+    loaded_nb_model = None
+
+    try:
+        loaded_logreg_model = joblib.load(logistic_regression_model_path)
+        print(f"Logistic Regression model loaded successfully from {logistic_regression_model_path}")
+    except FileNotFoundError:
+        print(f"Error: Logistic Regression model file not found at {logistic_regression_model_path}")
+
+    try:
+        loaded_nb_model = joblib.load(multinomial_nb_model_path)
+        print(f"Multinomial Naive Bayes model loaded successfully from {multinomial_nb_model_path}")
+    except FileNotFoundError:
+        print(f"Error: Multinomial Naive Bayes model file not found at {multinomial_nb_model_path}")
+
+    if loaded_logreg_model and loaded_nb_model:
+        # Create a dummy example of new input data (e.g., one row of 3000 features)
+        # This assumes your 'emails.csv' has 3000 feature columns.
+        dummy_new_data = pd.DataFrame([[0] * 3000]) # Example: a single "new email" with 3000 zero counts
+
+        try:
+            logreg_prediction = loaded_logreg_model.predict(dummy_new_data)
+            nb_prediction = loaded_nb_model.predict(dummy_new_data)
+
+            print(f"\nDummy new data shape: {dummy_new_data.shape}")
+            print(f"Logistic Regression prediction: {logreg_prediction[0]} (0: Not Spam, 1: Spam)")
+            print(f"Multinomial Naive Bayes prediction: {nb_prediction[0]} (0: Not Spam, 1: Spam)")
+
+        except Exception as e:
+            print(f"Error during dummy prediction: {e}")
+            print("Please ensure your new data has the same number of features (columns) as the training data (3000 for 'emails.csv').")
+    else:
+        print("\nCould not load one or both models. Skipping prediction example.")
 
 def perform_eda(df, target_column_name='Prediction'):
     """Performs initial Exploratory Data Analysis (EDA) on the DataFrame."""
@@ -127,50 +169,6 @@ def save_models(nb_model, logreg_model, models_dir):
     print("\nModel persistence complete. Models are saved for future use.")
 
 
-def load_and_predict_example(models_dir):
-    """Demonstrates loading models and making a dummy prediction."""
-    print("="*50)
-    print("Loading Models and Making Dummy Prediction")
-    print("="*50)
-
-    logistic_regression_model_path = os.path.join(models_dir, 'logistic_regression_model.joblib')
-    multinomial_nb_model_path = os.path.join(models_dir, 'multinomial_nb_model.joblib')
-
-    loaded_logreg_model = None
-    loaded_nb_model = None
-
-    try:
-        loaded_logreg_model = joblib.load(logistic_regression_model_path)
-        print(f"Logistic Regression model loaded successfully from {logistic_regression_model_path}")
-    except FileNotFoundError:
-        print(f"Error: Logistic Regression model file not found at {logistic_regression_model_path}")
-
-    try:
-        loaded_nb_model = joblib.load(multinomial_nb_model_path)
-        print(f"Multinomial Naive Bayes model loaded successfully from {multinomial_nb_model_path}")
-    except FileNotFoundError:
-        print(f"Error: Multinomial Naive Bayes model file not found at {multinomial_nb_model_path}")
-
-    if loaded_logreg_model and loaded_nb_model:
-        # Create a dummy example of new input data (e.g., one row of 3000 features)
-        # This assumes your 'emails.csv' has 3000 feature columns.
-        dummy_new_data = pd.DataFrame([[0] * 3000]) # Example: a single "new email" with 3000 zero counts
-
-        try:
-            logreg_prediction = loaded_logreg_model.predict(dummy_new_data)
-            nb_prediction = loaded_nb_model.predict(dummy_new_data)
-
-            print(f"\nDummy new data shape: {dummy_new_data.shape}")
-            print(f"Logistic Regression prediction: {logreg_prediction[0]} (0: Not Spam, 1: Spam)")
-            print(f"Multinomial Naive Bayes prediction: {nb_prediction[0]} (0: Not Spam, 1: Spam)")
-
-        except Exception as e:
-            print(f"Error during dummy prediction: {e}")
-            print("Please ensure your new data has the same number of features (columns) as the training data (3000 for 'emails.csv').")
-    else:
-        print("\nCould not load one or both models. Skipping prediction example.")
-
-
 if __name__ == "__main__":
     # Ensure NLTK data is available
     # check_and_download_nltk_data()
@@ -227,3 +225,5 @@ if __name__ == "__main__":
 
     except Exception as e:
         print(f"\nAn unexpected error occurred during the script execution: {e}")
+
+    input("\nPress Enter to exit the script.")

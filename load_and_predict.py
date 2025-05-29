@@ -67,3 +67,6 @@ if loaded_logreg_model and loaded_nb_model:
     except Exception as e:
         print(f"Error during dummy prediction: {e}")
         print("Please ensure your new data has the same number of features (columns) as the training data.")
+
+    input("\nPress Enter to exit the script.")
+   
